@@ -3,323 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TapSwap</title>
+    <title>Tap & Earn</title>
     <style>
         :root {
             --primary-color: #0088cc;
-            --background-color: #1a1a1a;
+            --background-color: #1a2a3a;
+            --card-background: #2a3b4a;
             --text-color: #ffffff;
-            --container-bg: #2b2b2b;
-            --border-color: #444;
+            --accent-color: #ffcc00;
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
             background-color: var(--background-color);
             color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            margin: 0;
+            padding-bottom: 60px; /* Space for the bottom bar */
         }
-        .main-content {
-            flex-grow: 1;
-            overflow-y: auto;
+
+        .container {
             padding: 20px;
         }
-        .bottom-nav {
-            display: flex;
-            justify-content: space-around;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background-color: var(--container-bg);
-            border-top: 1px solid var(--border-color);
-            padding: 10px 0;
-        }
-        .nav-item {
-            cursor: pointer;
-            text-align: center;
-            flex: 1;
-        }
-        .nav-item.active {
-            color: var(--primary-color);
-        }
-        .page {
+
+        .section {
             display: none;
+            animation: fadeIn 0.5s ease-in-out;
         }
-        .page.active {
+
+        .section.active {
             display: block;
         }
-        #tap-page {
-            text-align: center;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        #lion {
-            width: 200px;
-            height: 200px;
-            cursor: pointer;
-            user-select: none;
-            -webkit-user-select: none; /* Safari */
-            -moz-user-select: none; /* Firefox */
-            -ms-user-select: none; /* Internet Explorer/Edge */
-        }
-        #energy-bar-container {
+
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
             width: 100%;
-            background-color: #444;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        #energy-bar {
-            width: 100%;
-            height: 20px;
-            background-color: var(--primary-color);
-            border-radius: 5px;
-            text-align: center;
-            line-height: 20px;
-            color: white;
-            transition: width 0.1s linear;
-        }
-        .task-item {
-            background-color: var(--container-bg);
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
             display: flex;
-            justify-content: space-between;
+            justify-content: space-around;
             align-items: center;
+            background-color: var(--card-background);
+            border-top: 1px solid #334455;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
         }
-        .task-item button {
-            padding: 10px 15px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 5px;
+
+        .bottom-bar-item {
+            text-align: center;
+            flex: 1;
             cursor: pointer;
+            color: #8899aa;
+            transition: color 0.3s;
         }
-        .task-item button:disabled {
-            background-color: #555;
-            cursor: not-allowed;
+
+        .bottom-bar-item.active {
+            color: var(--primary-color);
         }
-        .withdraw-method {
+
+        .bottom-bar-item ion-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--accent-color);
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: 15px;
             padding: 20px;
-            background-color: var(--container-bg);
             margin-bottom: 15px;
-            border-radius: 8px;
-        }
-        .withdraw-method input {
-            width: calc(100% - 20px);
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 5px;
-            border: 1px solid var(--border-color);
-            background-color: #333;
-            color: white;
-        }
-        .withdraw-method button {
-            width: 100%;
-            padding: 15px;
-            margin-top: 15px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="main-content">
-        <!-- Profile Page -->
-        <div id="profile-page" class="page">
-            <h2>Profile</h2>
-            <p><strong>Username:</strong> <span id="username"></span></p>
-            <p><strong>Joining Date:</strong> <span id="joining-date"></span></p>
-            <p><strong>Referral Link:</strong> <span id="referral-link"></span></p>
-            <p><strong>Points:</strong> <span id="profile-points"></span></p>
-        </div>
-
-        <!-- Tap Page -->
-        <div id="tap-page" class="page active">
-            <h2>Tap the Lion!</h2>
-            <img src="https://i.imgur.com/M1MskH4.png" alt="Lion" id="lion">
-            <h3>Points: <span id="points">0</span></h3>
-            <div id="energy-bar-container">
-                <div id="energy-bar">100/100</div>
-            </div>
-        </div>
-
-        <!-- Task Page -->
-        <div id="task-page" class="page">
-            <h2>Tasks</h2>
-            <div id="task-list"></div>
-        </div>
-
-        <!-- Withdraw Page -->
-        <div id="withdraw-page" class="page">
-            <h2>Withdraw Points</h2>
-            <div class="withdraw-method">
-                <h3>PayPal</h3>
-                <input type="email" placeholder="Enter your PayPal email">
-                <input type="number" placeholder="Enter points to withdraw">
-                <button onclick="withdraw('PayPal')">Withdraw</button>
-            </div>
-            <div class="withdraw-method">
-                <h3>Bank Transfer</h3>
-                <input type="text" placeholder="Account Holder Name">
-                <input type="text" placeholder="Account Number">
-                <input type="text" placeholder="IFSC Code">
-                <input type="number" placeholder="Enter points to withdraw">
-                <button onclick="withdraw('Bank Transfer')">Withdraw</button>
-            </div>
-            <div class="withdraw-method">
-                <h3>UPI</h3>
-                <input type="text" placeholder="Enter your UPI ID">
-                <input type="number" placeholder="Enter points to withdraw">
-                <button onclick="withdraw('UPI')">Withdraw</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="showPage('tap-page')">Tap</div>
-        <div class="nav-item" onclick="showPage('task-page')">Task</div>
-        <div class="nav-item" onclick="showPage('profile-page')">Profile</div>
-        <div class="nav-item" onclick="showPage('withdraw-page')">Withdraw</div>
-    </div>
-
-    <script>
-        // --- Database ---
-        let db = {
-            points: 0,
-            energy: 100,
-            maxEnergy: 100,
-            joiningDate: new Date().toLocaleDateString(),
-            completedTasks: []
-        };
-
-        // --- DOM Elements ---
-        const pointsDisplay = document.getElementById('points');
-        const profilePointsDisplay = document.getElementById('profile-points');
-        const energyBar = document.getElementById('energy-bar');
-        const lion = document.getElementById('lion');
-        const usernameDisplay = document.getElementById('username');
-        const joiningDateDisplay = document.getElementById('joining-date');
-        const referralLinkDisplay = document.getElementById('referral-link');
-        const taskList = document.getElementById('task-list');
-
-        // --- Local Storage ---
-        function saveData() {
-            localStorage.setItem('tapSwapData', JSON.stringify(db));
-        }
-
-        function loadData() {
-            const savedData = localStorage.getItem('tapSwapData');
-            if (savedData) {
-                db = JSON.parse(savedData);
-            }
-        }
-
-        // --- Navigation ---
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-                if (item.textContent.toLowerCase() === pageId.split('-')[0]) {
-                    item.classList.add('active');
-                }
-            });
-            updateUI();
-        }
-
-        // --- Tapping Logic ---
-        lion.addEventListener('click', () => {
-            if (db.energy > 0) {
-                db.points++;
-                db.energy--;
-                updateUI();
-                saveData();
-            }
-        });
-
-        // --- Energy Regeneration ---
-        setInterval(() => {
-            if (db.energy < db.maxEnergy) {
-                db.energy++;
-                updateUI();
-                saveData();
-            }
-        }, 1000); // Regenerate 1 energy per second
-
-        // --- Task Logic ---
-        const tasks = [
-            { id: 1, text: 'Watch YouTube Video 1', reward: () => Math.floor(Math.random() * 1000) + 1 },
-            { id: 2, text: 'Watch YouTube Video 2', reward: () => Math.floor(Math.random() * 1000) + 1 },
-            { id: 3, text: 'Watch YouTube Video 3', reward: () => Math.floor(Math.random() * 1000) + 1 },
-            { id: 4, text: 'Watch YouTube Video 4', reward: () => Math.floor(Math.random() * 1000) + 1 },
-            { id: 5, text: 'Watch YouTube Video 5', reward: () => Math.floor(Math.random() * 1000) + 1 }
-        ];
-
-        function renderTasks() {
-            taskList.innerHTML = '';
-            tasks.forEach(task => {
-                const taskItem = document.createElement('div');
-                taskItem.className = 'task-item';
-                const isCompleted = db.completedTasks.includes(task.id);
-                taskItem.innerHTML = `
-                    <span>${task.text}</span>
-                    <button onclick="completeTask(${task.id})" ${isCompleted ? 'disabled' : ''}>
-                        ${isCompleted ? 'Completed' : 'Earn'}
-                    </button>
-                `;
-                taskList.appendChild(taskItem);
-            });
-        }
-
-        function completeTask(taskId) {
-            if (!db.completedTasks.includes(taskId)) {
-                const task = tasks.find(t => t.id === taskId);
-                const pointsEarned = task.reward();
-                db.points += pointsEarned;
-                db.completedTasks.push(taskId);
-                alert(`You earned ${pointsEarned} points!`);
-                updateUI();
-                renderTasks();
-                saveData();
-            }
-        }
-        
-        // --- Withdraw Logic ---
-        function withdraw(method) {
-            alert(`Withdrawal via ${method} is a mock function.`);
-            // In a real app, you would handle the withdrawal process here.
-        }
-
-        // --- UI Update ---
-        function updateUI() {
-            pointsDisplay.textContent = db.points;
-            profilePointsDisplay.textContent = db.points;
-            energyBar.style.width = `${(db.energy / db.maxEnergy) * 100}%`;
-            energyBar.textContent = `${db.energy}/${db.maxEnergy}`;
-            
-            // Profile page
-            usernameDisplay.textContent = 'Telegram User'; // Placeholder
-            joiningDateDisplay.textContent = db.joiningDate;
-            referralLinkDisplay.textContent = `t.me/tapswap_bot?start=${btoa('user123')}`; // Placeholder
-        }
-
-        // --- Initialization ---
-        function init() {
-            loadData();
-            renderTasks();
-            updateUI();
-            showPage('tap-page');
-        }
-
-        init();
-    </script>
-</body>
-</html>
+            box-shadow: 0 4px 12px rgba(0,0
